@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import connect from '../server/assets/mongo/db.js';
+import connect from './assets/mongo/db.js';
 import PurchaseRouter from './routes/purchaseRoute.js';
 import SalesRouter from './routes/salesRoute.js';
 import UserRouter from './routes/userRoute.js';
@@ -22,11 +22,9 @@ const app = express()
 dotenv.config();
 app.use(cors(corsOptions));
 app.use(express.json())
-connect();
 
-app.get('/', (req, res) => {
-    res.send('Hello');
-    console.log('world')
+app.get('/', (_, res) => {
+    res.status(200).json({message: 'Docker is working fine!'});
 });
 
 app.use('/purchases', PurchaseRouter);
@@ -40,12 +38,10 @@ app.use('/order', OrderRouter);
 app.use('/forgotpassword', ForgotPasswordRouter);
 
 // This condition redering is because of the deployment of the server directory in vercel. Vercel is having a builtIn server to deploy the projects. 
-
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 5000;         
-    app.listen(PORT, () => {
-        console.log(`Server started on port ${PORT}`)
-    });
-}
+const PORT = process.env.PORT || 5000;         
+app.listen(PORT, async () => {
+    console.log(`Server started on port ${PORT} in ${process.env.NODE_ENV} mode.`);
+    await connect();
+});
 
 export default app;

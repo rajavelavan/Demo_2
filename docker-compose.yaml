@@ -1,0 +1,49 @@
+name: demoForCompose
+services:
+  mongo:
+    image: mongo:7.0.12
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - demo-net
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app # Mount the server code in container
+      - /app/node_modules # Ensure node_modules is not overwritten
+    ports:
+      - "5000:5000"
+    networks:
+      - demo-net
+    depends_on:
+      - mongo
+  
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./client/.env
+    volumes:
+      - ./client:/app # Mount the client code in container
+      - /app/node_modules # Ensure node_modules is not overwritten
+    ports:
+      - "3000:3000"
+    networks:
+      - demo-net
+    depends_on:
+      - server
+volumes:
+  mongo-data:
+networks:
+  demo-net:
+    driver: bridge
